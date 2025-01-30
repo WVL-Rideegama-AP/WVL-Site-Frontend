@@ -1,11 +1,10 @@
 import React, { useEffect, useState, useCallback } from "react";
-import Lightbox from "react-image-lightbox";
-import "react-image-lightbox/style.css";
+import { IoMdClose, IoMdArrowBack, IoMdArrowForward } from "react-icons/io"; // Using React Icons (MUI Alternative)
 
 const GalleryComponent = () => {
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [index, setIndex] = useState(-1);
+  const [selectedIndex, setSelectedIndex] = useState(null);
 
   const fetchImages = useCallback(async () => {
     setLoading(true);
@@ -16,9 +15,7 @@ const GalleryComponent = () => {
 
       const formattedImages = data.map((item) => ({
         src: item.image,
-        thumbnail: item.image,
         caption: item.title,
-        original: item.image,
         description: item.description,
       }));
       setImages(formattedImages);
@@ -33,16 +30,32 @@ const GalleryComponent = () => {
     fetchImages();
   }, [fetchImages]);
 
-  const handleClick = (index) => setIndex(index);
-  const handleClose = () => setIndex(-1);
-  const handleMovePrev = () =>
-    setIndex((index + images.length - 1) % images.length);
-  const handleMoveNext = () => setIndex((index + 1) % images.length);
+  const handleNext = useCallback(() => {
+    setSelectedIndex((prevIndex) => (prevIndex + 1) % images.length);
+  }, [images.length]);
+
+  const handlePrev = useCallback(() => {
+    setSelectedIndex((prevIndex) =>
+      prevIndex === 0 ? images.length - 1 : prevIndex - 1
+    );
+  }, [images.length]);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (selectedIndex === null) return;
+      if (e.key === "ArrowRight") handleNext();
+      if (e.key === "ArrowLeft") handlePrev();
+      if (e.key === "Escape") setSelectedIndex(null);
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selectedIndex, handleNext, handlePrev]);
 
   if (loading) {
     return (
       <div className="flex justify-center items-center h-[calc(80vh-200px)]">
-        <div className="spinner-border animate-spin border-t-4 border-blue-500 rounded-full h-24 w-24"></div>
+        <div className="spinner-border animate-spin border-t-4 border-gray-500 rounded-full h-24 w-24"></div>
       </div>
     );
   }
@@ -52,12 +65,11 @@ const GalleryComponent = () => {
       <div className="mb-8 text-center">
         <h1 className="text-4xl font-semibold text-gray-800 mb-2">Gallery</h1>
         <p className="text-gray-600 text-lg">
-          Click on an image to view it in full size
+          Click an image to view full size
         </p>
       </div>
 
       <div className="w-full max-w-7xl mx-auto px-4">
-        {/* CSS Grid Layout */}
         {images.length === 0 ? (
           <div className="flex items-center justify-center space-x-2 p-32">
             <span className="text-4xl text-red-500">!</span>
@@ -71,10 +83,10 @@ const GalleryComponent = () => {
                 className="relative w-full h-64 bg-gray-200 rounded-lg overflow-hidden"
               >
                 <img
-                  src={image.thumbnail}
+                  src={image.src}
                   alt={image.caption}
-                  className="w-full h-full object-cover cursor-pointer"
-                  onClick={() => handleClick(index)}
+                  className="w-full h-full object-cover cursor-pointer transition-transform duration-200 hover:scale-105"
+                  onClick={() => setSelectedIndex(index)}
                 />
               </div>
             ))}
@@ -82,17 +94,47 @@ const GalleryComponent = () => {
         )}
       </div>
 
-      {images[index] && (
-        <Lightbox
-          mainSrc={images[index].original}
-          nextSrc={images[(index + 1) % images.length].original}
-          prevSrc={images[(index + images.length - 1) % images.length].original}
-          imageTitle={images[index].caption}
-          imageCaption={images[index].description}
-          onCloseRequest={handleClose}
-          onMovePrevRequest={handleMovePrev}
-          onMoveNextRequest={handleMoveNext}
-        />
+      {selectedIndex !== null && images[selectedIndex] && (
+        <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50">
+          {/* Close Button */}
+          <button
+            className="absolute top-6 right-6 text-white rounded-full w-12 h-12 border border-white flex items-center justify-center hover:bg-white hover:text-black transition"
+            onClick={() => setSelectedIndex(null)}
+          >
+            <IoMdClose size={28} />
+          </button>
+
+          {/* Previous Button */}
+          <button
+            className="absolute left-10 top-1/2 transform -translate-y-1/2 text-white rounded-full w-12 h-12 border border-white flex items-center justify-center hover:bg-white hover:text-black transition"
+            onClick={handlePrev}
+          >
+            <IoMdArrowBack size={28} />
+          </button>
+
+          {/* Image Display */}
+          <div className="max-w-3xl p-4 text-center">
+            <img
+              src={images[selectedIndex].src}
+              alt={images[selectedIndex].caption}
+              className="max-h-[80vh] w-auto mx-auto rounded-lg shadow-lg"
+            />
+            <h2 className="text-white text-2xl mt-4">
+              {images[selectedIndex].caption}
+            </h2>
+            <p className="text-gray-300 text-lg mt-2">
+              {images[selectedIndex].description}
+            </p>
+          </div>
+
+          {/* Next Button */}
+          <button
+            className="absolute right-10 top-1/2 transform -translate-y-1/2 text-white rounded-full w-12 h-12 border border-white flex items-center justify-center hover:bg-white hover:text-black transition"
+            onClick={handleNext}
+          >
+            <IoMdArrowForward size={28} />
+          </button>
+        </div>
       )}
     </div>
   );
