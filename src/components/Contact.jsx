@@ -17,7 +17,14 @@ const Contact = () => {
     // Fetch EmailJS configuration from the backend
     const fetchEmailjsConfig = async () => {
       try {
-        const response = await fetch("http://localhost:5000/emailjs-config");
+        const apiUrl = process.env.REACT_APP_API_BASE_URL;
+
+        if (!apiUrl) throw new Error("API URL is missing!");
+
+        const fullUrl = `${apiUrl}/emailjs-config`;
+        console.log("Fetching from:", fullUrl);
+
+        const response = await fetch(fullUrl);
         if (!response.ok) {
           throw new Error("Failed to fetch EmailJS configuration");
         }
