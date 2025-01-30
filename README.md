@@ -1,2 +1,3 @@
-# WVL-Site-Frontend
-Frontend of the WVL website
+```
+npm install @react-google-maps/api
+```
