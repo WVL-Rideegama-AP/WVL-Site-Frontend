@@ -20,7 +20,7 @@ const CP = () => {
 
         if (!apiUrl) throw new Error("API URL is missing!");
 
-        const fullUrl = `${apiUrl}/api/in`;
+        const fullUrl = `${apiUrl}/api/led`;
         console.log("Fetching from:", fullUrl);
 
         const response = await fetch(fullUrl); // Fetch data from the specified API
