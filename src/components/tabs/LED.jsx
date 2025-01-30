@@ -1,25 +1,32 @@
 import React, { useRef, useState, useEffect } from "react";
-import Card from "../Card";
-import Map from "../Map";
+import Card from "../Card"; // Importing the Card component
+import Map from "../Map"; // Importing the Map component
 
-const LED = () => {
+const CP = () => {
   const [expandedCardId, setExpandedCardId] = useState(null); // Track which card is expanded
-  const [searchQuery, setSearchQuery] = useState(""); // State for search input
-  const [selectedProjectType, setSelectedProjectType] = useState(""); // State for selected project type
-  const [selectedGsDivision, setSelectedGsDivision] = useState(""); // State for selected GS division
-  const [filteredCards, setFilteredCards] = useState([]); // State for cards after filtering
-  const [cardsData, setCardsData] = useState([]); // Store fetched cards from MongoDB
+  const [searchQuery, setSearchQuery] = useState(""); // State for search query
+  const [selectedProjectType, setSelectedProjectType] = useState(""); // State for selected project type filter
+  const [selectedGsDivision, setSelectedGsDivision] = useState(""); // State for selected GS division filter
+  const [filteredCards, setFilteredCards] = useState([]); // State for filtered cards based on criteria
+  const [cardsData, setCardsData] = useState([]); // State to store fetched cards from MongoDB
   const [isLoading, setIsLoading] = useState(true); // State to track loading status
   const mapRef = useRef(null); // Reference for the Map component
 
-  // Fetch card data from backend
+  // Fetch card data from backend on component mount
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/led"); // Adjust the URL based on your backend
+        const apiUrl = process.env.REACT_APP_API_BASE_URL;
+
+        if (!apiUrl) throw new Error("API URL is missing!");
+
+        const fullUrl = `${apiUrl}/api/in`;
+        console.log("Fetching from:", fullUrl);
+
+        const response = await fetch(fullUrl); // Fetch data from the specified API
         const data = await response.json(); // Convert response to JSON
-        setCardsData(data); // Set fetched data
-        setFilteredCards(data); // Initialize filteredCards with all data
+        setCardsData(data); // Set fetched data to cardsData
+        setFilteredCards(data); // Initialize filteredCards with all fetched data
         setIsLoading(false); // Set loading to false after data is fetched
       } catch (error) {
         console.error("Error fetching data:", error); // Log error if fetching fails
@@ -31,14 +38,11 @@ const LED = () => {
 
   // Update filteredCards based on search and filter criteria
   useEffect(() => {
-    const lowercasedQuery = (searchQuery || "").toLowerCase(); // Normalize search query to lowercase
+    const lowercasedQuery = searchQuery.toLowerCase(); // Convert search query to lowercase for case-insensitive matching
     const filtered = cardsData.filter((card) => {
-      const cardName = card.name ? card.name.toLowerCase() : ""; // Handle potential undefined name
-      const cardProject = card.project ? card.project.toLowerCase() : ""; // Handle potential undefined project
-
       const matchesSearch =
-        cardName.includes(lowercasedQuery) || // Check if name matches the search query
-        cardProject.includes(lowercasedQuery); // Check if project matches the search query
+        card.name.toLowerCase().includes(lowercasedQuery) || // Check if name matches the search query
+        card.project.toLowerCase().includes(lowercasedQuery); // Check if project matches the search query
       const matchesProjectType = selectedProjectType
         ? card.project === selectedProjectType // Filter by project type if selected
         : true; // Include all if no project type is selected
@@ -67,7 +71,7 @@ const LED = () => {
     <div className="mr-5 ml-5 flex flex-col items-center font-sans">
       {/* Heading */}
       <h1 className="text-4xl font-bold mb-5 mt-5">
-        Livelihood and Economic Development Project
+        Child Protection and Participation Project
       </h1>
       <p className="mb-6">Short description here</p>
 
@@ -75,7 +79,7 @@ const LED = () => {
       <div className="flex flex-col lg:flex-row w-full">
         {/* Left Column for the list of projects */}
         <div className="lg:w-2/5  bg-gray-100 p-6 m-3 rounded-xl">
-          <h2 className="text-xl font-bold mb-4">List of LED Projects</h2>
+          <h2 className="text-xl font-bold mb-4">List of CP Projects</h2>
 
           {/* Search Bar with Icon */}
           <div className="relative mb-4">
@@ -103,10 +107,9 @@ const LED = () => {
               onChange={(e) => setSelectedProjectType(e.target.value)} // Update project type on selection change
             >
               <option value="">All Project Types</option>
-              <option value="AT">AT</option>
-              <option value="CSAP">CSAP</option>
-              <option value="LDRR">LDRR</option>
-              <option value="S4T">S4T</option>
+              <option value="Project 1">Project 1</option>
+              <option value="Project 2">Project 2</option>
+              <option value="Project 3">Project 3</option>
             </select>
 
             <select
@@ -180,4 +183,4 @@ const LED = () => {
   );
 };
 
-export default LED; // Export the component for use in other parts of the application
+export default CP;

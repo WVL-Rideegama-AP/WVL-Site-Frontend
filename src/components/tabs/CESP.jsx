@@ -16,7 +16,14 @@ const CESP = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/cesp"); // Fetching data from the API
+        const apiUrl = process.env.REACT_APP_API_BASE_URL;
+
+        if (!apiUrl) throw new Error("API URL is missing!");
+
+        const fullUrl = `${apiUrl}/api/cesp`;
+        console.log("Fetching from:", fullUrl);
+
+        const response = await fetch(fullUrl); // Fetching data from the API
         const data = await response.json(); // Converting response to JSON
         setCardsData(data); // Set fetched data to cardsData state
         setFilteredCards(data); // Initialize filteredCards with all fetched data

@@ -9,18 +9,37 @@ const GalleryComponent = () => {
   const fetchImages = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await fetch("http://localhost:5000/gallery");
-      if (!response.ok) throw new Error("Failed to fetch images");
-      const data = await response.json();
+      const apiUrl = process.env.REACT_APP_API_BASE_URL;
 
-      const formattedImages = data.map((item) => ({
-        src: item.image,
-        caption: item.title,
-        description: item.description,
-      }));
-      setImages(formattedImages);
+      if (!apiUrl) throw new Error("API URL is missing!");
+
+      const fullUrl = `${apiUrl}/gallery`;
+      console.log("Fetching from:", fullUrl);
+
+      const response = await fetch(fullUrl, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      console.log("Response Status:", response.status);
+
+      if (!response.ok)
+        throw new Error(`Request failed with status ${response.status}`);
+
+      const data = await response.json();
+      console.log("Fetched Data:", data);
+
+      setImages(
+        data.map((item) => ({
+          src: item.image,
+          caption: item.title,
+          description: item.description,
+        }))
+      );
     } catch (error) {
-      console.error("Error fetching images:", error);
+      console.error("Fetch error:", error);
     } finally {
       setLoading(false);
     }

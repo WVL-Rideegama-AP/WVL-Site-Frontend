@@ -76,9 +76,16 @@ const UploadData = ({ tab, selectedData, resetSelection, onSubmit }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const apiUrl = process.env.REACT_APP_API_BASE_URL;
+    if (!apiUrl) {
+      alert("API URL is missing! Check your .env file.");
+      return;
+    }
+
     const url = selectedData
-      ? `http://localhost:5000/api/${tab}/${selectedData._id}`
-      : `http://localhost:5000/api/${tab}`;
+      ? `${apiUrl}/api/${tab}/${selectedData._id}`
+      : `${apiUrl}/api/${tab}`;
     const payload = new FormData();
 
     for (let key in formData) {

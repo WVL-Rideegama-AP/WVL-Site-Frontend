@@ -4,11 +4,15 @@ const ImageTable = ({ onEdit, refreshTable }) => {
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true); // Loading state
 
+  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+
   // Fetch images from the API
   const fetchImages = useCallback(async () => {
     setLoading(true); // Set loading to true when fetching starts
     try {
-      const response = await fetch(`http://localhost:5000/gallery`);
+      if (!API_BASE_URL) throw new Error("API URL is missing!");
+
+      const response = await fetch(`${API_BASE_URL}/gallery`);
       if (!response.ok) throw new Error("Failed to fetch images");
       const jsonData = await response.json();
       setImages(jsonData);
@@ -17,7 +21,7 @@ const ImageTable = ({ onEdit, refreshTable }) => {
     } finally {
       setLoading(false); // Set loading to false after fetching completes
     }
-  }, []);
+  }, [API_BASE_URL]);
 
   useEffect(() => {
     fetchImages();
@@ -27,7 +31,7 @@ const ImageTable = ({ onEdit, refreshTable }) => {
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this image?")) return;
     try {
-      const response = await fetch(`http://localhost:5000/gallery/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/gallery/${id}`, {
         method: "DELETE",
       });
       if (!response.ok) throw new Error("Failed to delete image");
@@ -93,14 +97,14 @@ const ImageTable = ({ onEdit, refreshTable }) => {
                 </td>
                 <td className="border border-gray-300 px-4 py-2 space-x-2">
                   <button
-                    type="button" // Explicitly set type to prevent form submission behavior
+                    type="button"
                     onClick={() => onEdit(image)}
                     className="bg-blue-500 text-white px-3 py-1 rounded"
                   >
                     Edit
                   </button>
                   <button
-                    type="button" // Explicitly set type
+                    type="button"
                     onClick={() => handleDelete(image._id)}
                     className="bg-red-500 text-white px-3 py-1 rounded"
                   >

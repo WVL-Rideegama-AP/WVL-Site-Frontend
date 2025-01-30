@@ -6,9 +6,7 @@ const ImageUpload = ({ selectedData, resetSelection, onSubmit }) => {
     description: "",
     image: null,
   });
-  const [isUploading, setIsUploading] = useState(false); // State to track upload status
-
-  // Use ref for the file input element
+  const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -16,7 +14,7 @@ const ImageUpload = ({ selectedData, resetSelection, onSubmit }) => {
       setFormData({
         title: selectedData.title || "",
         description: selectedData.description || "",
-        image: selectedData.image || null, // Use existing image URL or null
+        image: selectedData.image || null,
       });
     } else {
       resetForm();
@@ -30,12 +28,6 @@ const ImageUpload = ({ selectedData, resetSelection, onSubmit }) => {
       image: null,
     });
     if (fileInputRef.current) fileInputRef.current.value = "";
-
-    // Reset image previews
-    setFormData((prevData) => ({
-      ...prevData,
-      image: null,
-    }));
   };
 
   const handleChange = (e) => {
@@ -50,29 +42,36 @@ const ImageUpload = ({ selectedData, resetSelection, onSubmit }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const url = selectedData
-      ? `http://localhost:5000/gallery/${selectedData._id}`
-      : `http://localhost:5000/gallery`;
-    const payload = new FormData();
 
+    const apiUrl = process.env.REACT_APP_API_BASE_URL;
+    if (!apiUrl) {
+      alert("API URL is missing! Check your .env file.");
+      return;
+    }
+
+    const url = selectedData
+      ? `${apiUrl}/gallery/${selectedData._id}`
+      : `${apiUrl}/gallery`;
+
+    const payload = new FormData();
     for (let key in formData) {
-      if (key === "image") {
-        if (formData[key] instanceof File) {
-          // Only append files, not URLs
-          payload.append(key, formData[key]);
-        }
-      } else {
+      if (key === "image" && formData[key] instanceof File) {
+        payload.append(key, formData[key]);
+      } else if (key !== "image") {
         payload.append(key, formData[key]);
       }
     }
-    setIsUploading(true); // Start uploading
+
+    setIsUploading(true);
 
     try {
       const response = await fetch(url, {
         method: selectedData ? "PUT" : "POST",
         body: payload,
       });
-      if (!response.ok) throw new Error("Failed to save data");
+
+      if (!response.ok)
+        throw new Error(`Failed with status ${response.status}`);
 
       alert(
         selectedData
@@ -82,10 +81,10 @@ const ImageUpload = ({ selectedData, resetSelection, onSubmit }) => {
       resetForm();
       onSubmit();
     } catch (error) {
-      console.error("Error uploading image:", error);
+      console.error("Upload error:", error);
       alert("Error uploading image. Please try again.");
     } finally {
-      setIsUploading(false); // End uploading
+      setIsUploading(false);
     }
   };
 
@@ -120,7 +119,7 @@ const ImageUpload = ({ selectedData, resetSelection, onSubmit }) => {
           </label>
           {formData.image && !(formData.image instanceof File) && (
             <img
-              src={formData.image} // Preview the existing image URL
+              src={formData.image}
               alt="Preview"
               className="h-16 w-16 object-cover mb-2"
             />
