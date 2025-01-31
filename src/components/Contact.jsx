@@ -14,22 +14,24 @@ const Contact = () => {
   const [emailjsConfig, setEmailjsConfig] = useState(null);
 
   useEffect(() => {
+    // Fetch backend URL from .env
+    const backendUrl = process.env.REACT_APP_API_BASE_URL;
+
+    if (!backendUrl) {
+      console.error("Backend URL is missing!");
+      setErrorMessage("Server configuration missing.");
+      return;
+    }
+
     // Fetch EmailJS configuration from the backend
     const fetchEmailjsConfig = async () => {
       try {
-        const apiUrl = process.env.REACT_APP_API_BASE_URL;
-
-        if (!apiUrl) throw new Error("API URL is missing!");
-
-        const fullUrl = `${apiUrl}/emailjs-config`;
-        console.log("Fetching from:", fullUrl);
-
-        const response = await fetch(fullUrl);
-        if (!response.ok) {
+        const response = await fetch(`${backendUrl}/emailjs-config`);
+        if (!response.ok)
           throw new Error("Failed to fetch EmailJS configuration");
-        }
+
         const config = await response.json();
-        setEmailjsConfig(config); // Store the config for use
+        setEmailjsConfig(config);
       } catch (error) {
         console.error("Error fetching EmailJS config:", error);
         setErrorMessage("Failed to load email configuration.");
@@ -57,7 +59,7 @@ const Contact = () => {
         .sendForm(
           emailjsConfig.serviceId,
           emailjsConfig.templateId,
-          e.target, // form is passed as the target of the submit event
+          e.target, // Form element
           emailjsConfig.publicKey
         )
         .then(
@@ -66,7 +68,7 @@ const Contact = () => {
             setFormData({ name: "", email: "", message: "" });
           },
           (error) => {
-            console.log("FAILED...", error.text);
+            console.error("FAILED...", error.text);
             setErrorMessage(
               "Failed to send the message. Please try again later."
             );
