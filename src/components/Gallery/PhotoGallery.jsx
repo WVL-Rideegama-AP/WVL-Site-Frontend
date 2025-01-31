@@ -1,5 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { IoMdClose, IoMdArrowBack, IoMdArrowForward } from "react-icons/io"; // Using React Icons (MUI Alternative)
+import { IoMdClose } from "react-icons/io";
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { useSwipeable } from "react-swipeable";
 
 const GalleryComponent = () => {
   const [images, setImages] = useState([]);
@@ -10,27 +12,13 @@ const GalleryComponent = () => {
     setLoading(true);
     try {
       const apiUrl = process.env.REACT_APP_API_BASE_URL;
-
       if (!apiUrl) throw new Error("API URL is missing!");
 
-      const fullUrl = `${apiUrl}/gallery`;
-      console.log("Fetching from:", fullUrl);
-
-      const response = await fetch(fullUrl, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      console.log("Response Status:", response.status);
-
+      const response = await fetch(`${apiUrl}/gallery`);
       if (!response.ok)
         throw new Error(`Request failed with status ${response.status}`);
 
       const data = await response.json();
-      console.log("Fetched Data:", data);
-
       setImages(
         data.map((item) => ({
           src: item.image,
@@ -59,6 +47,13 @@ const GalleryComponent = () => {
     );
   }, [images.length]);
 
+  const swipeHandlers = useSwipeable({
+    onSwipedLeft: handleNext,
+    onSwipedRight: handlePrev,
+    preventScrollOnSwipe: true,
+    trackMouse: true,
+  });
+
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (selectedIndex === null) return;
@@ -80,7 +75,7 @@ const GalleryComponent = () => {
   }
 
   return (
-    <div className="max-h-screen pb-5 flex flex-col items-center justify-center">
+    <div className="relative w-full pb-5 flex flex-col items-center justify-center">
       <div className="mb-8 text-center">
         <h1 className="text-4xl font-semibold text-gray-800 mb-2">Gallery</h1>
         <p className="text-gray-600 text-lg">
@@ -88,7 +83,7 @@ const GalleryComponent = () => {
         </p>
       </div>
 
-      <div className="w-full max-w-7xl mx-auto px-4">
+      <div className="w-full max-w-7xl mx-auto px-4 overflow-hidden">
         {images.length === 0 ? (
           <div className="flex items-center justify-center space-x-2 p-32">
             <span className="text-4xl text-red-500">!</span>
@@ -114,21 +109,24 @@ const GalleryComponent = () => {
       </div>
 
       {selectedIndex !== null && images[selectedIndex] && (
-        <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50">
+        <div
+          className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 overflow-hidden"
+          {...swipeHandlers}
+        >
           {/* Close Button */}
           <button
-            className="absolute top-6 right-6 text-white rounded-full w-12 h-12 border border-white flex items-center justify-center hover:bg-white hover:text-black transition"
+            className="absolute top-4 right-4 bg-white text-black rounded-full w-10 h-10 flex items-center justify-center shadow-lg hover:bg-gray-300 transition"
             onClick={() => setSelectedIndex(null)}
           >
             <IoMdClose size={28} />
           </button>
 
-          {/* Previous Button */}
+          {/* Previous Button - Only visible on desktop */}
           <button
-            className="absolute left-10 top-1/2 transform -translate-y-1/2 text-white rounded-full w-12 h-12 border border-white flex items-center justify-center hover:bg-white hover:text-black transition"
+            className="absolute left-4 bg-white text-black rounded-full w-12 h-12 hidden md:flex items-center justify-center shadow-lg hover:bg-gray-300 transition"
             onClick={handlePrev}
           >
-            <IoMdArrowBack size={28} />
+            <FaChevronLeft size={24} />
           </button>
 
           {/* Image Display */}
@@ -146,12 +144,12 @@ const GalleryComponent = () => {
             </p>
           </div>
 
-          {/* Next Button */}
+          {/* Next Button - Only visible on desktop */}
           <button
-            className="absolute right-10 top-1/2 transform -translate-y-1/2 text-white rounded-full w-12 h-12 border border-white flex items-center justify-center hover:bg-white hover:text-black transition"
+            className="absolute right-4 bg-white text-black rounded-full w-12 h-12 hidden md:flex items-center justify-center shadow-lg hover:bg-gray-300 transition"
             onClick={handleNext}
           >
-            <IoMdArrowForward size={28} />
+            <FaChevronRight size={24} />
           </button>
         </div>
       )}

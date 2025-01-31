@@ -1,27 +1,20 @@
-import React, { useEffect, useState, useCallback } from "react"; // Import necessary hooks from React
+import React, { useEffect, useState, useCallback } from "react";
 
 const DataTable = ({ tab, onEdit, refreshTable }) => {
-  // State for holding fetched data
   const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true); // Loading state
+  const [loading, setLoading] = useState(true);
 
   const fetchData = useCallback(async () => {
-    setLoading(true); // Set loading to true when fetching starts
+    setLoading(true);
     try {
       const apiUrl = process.env.REACT_APP_API_BASE_URL;
-
       if (!apiUrl) throw new Error("API URL is missing!");
 
-      const fullUrl = `${apiUrl}/api/${tab}`;
-      console.log("Fetching from:", fullUrl);
-
-      const response = await fetch(fullUrl);
+      const response = await fetch(`${apiUrl}/api/${tab}`);
       if (!response.ok) throw new Error("Failed to fetch data");
 
       const jsonData = await response.json();
-      console.log("Fetched Data:", jsonData); // Log fetched data
-
-      setData(jsonData); // Update state with fetched data
+      setData(jsonData);
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
@@ -29,28 +22,23 @@ const DataTable = ({ tab, onEdit, refreshTable }) => {
     }
   }, [tab]);
 
-  // Fetch data initially and when `tab` or `refreshTable` changes
   useEffect(() => {
-    fetchData(); // Call fetchData to get data
+    fetchData();
   }, [fetchData, refreshTable]);
 
-  // Delete item from API
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this item?")) return; // Confirmation prompt
-
+    if (!window.confirm("Are you sure you want to delete this item?")) return;
     try {
       const apiUrl = process.env.REACT_APP_API_BASE_URL;
       if (!apiUrl) throw new Error("API URL is missing!");
 
-      const fullUrl = `${apiUrl}/api/${tab}/${id}`;
-      console.log("Deleting:", fullUrl);
-
-      const response = await fetch(fullUrl, { method: "DELETE" });
-
+      const response = await fetch(`${apiUrl}/api/${tab}/${id}`, {
+        method: "DELETE",
+      });
       if (!response.ok) throw new Error("Failed to delete item");
 
       alert("Item deleted successfully!");
-      fetchData(); // Refresh data after delete
+      fetchData();
     } catch (error) {
       console.error("Error deleting item:", error);
     }
@@ -74,75 +62,97 @@ const DataTable = ({ tab, onEdit, refreshTable }) => {
           <span className="text-lg text-gray-600">No data available</span>
         </div>
       ) : (
-        <table className="min-w-full border border-gray-300">
-          <thead>
-            <tr className="bg-orange-500 text-white">
-              <th className="border border-gray-300">National ID</th>
-              <th className="border border-gray-300">Name</th>
-              <th className="border border-gray-300">Project</th>
-              <th className="border border-gray-300">GS Division</th>
-              <th className="border border-gray-300">Address</th>
-              <th className="border border-gray-300">Description</th>
-              <th className="border border-gray-300">Latitude</th>
-              <th className="border border-gray-300">Longitude</th>
-              <th className="border border-gray-300">Before Image</th>
-              <th className="border border-gray-300">After Image</th>
-              <th className="border border-gray-300">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.map((item) => (
-              <tr key={item._id}>
-                <td className="border border-gray-300">{item.nationalId}</td>
-                <td className="border border-gray-300">{item.name}</td>
-                <td className="border border-gray-300">{item.project}</td>
-                <td className="border border-gray-300">{item.gsDivision}</td>
-                <td className="border border-gray-300">{item.address}</td>
-                <td className="border border-gray-300">{item.description}</td>
-                <td className="border border-gray-300">{item.lat}</td>
-                <td className="border border-gray-300">{item.lng}</td>
-                <td className="border border-gray-300">
-                  {item.beforePhoto && (
-                    <img
-                      src={item.beforePhoto}
-                      alt="Before"
-                      className="h-16 w-16 object-cover"
-                      onError={(e) =>
-                        console.error("Error loading before photo", e)
-                      }
-                    />
-                  )}
-                </td>
-                <td className="border border-gray-300">
-                  {item.afterPhoto && (
-                    <img
-                      src={item.afterPhoto}
-                      alt="After"
-                      className="h-16 w-16 object-cover"
-                      onError={(e) =>
-                        console.error("Error loading after photo", e)
-                      }
-                    />
-                  )}
-                </td>
-                <td className="border border-gray-300 flex space-x-2 justify-center">
-                  <button
-                    onClick={() => onEdit(item)}
-                    className="bg-blue-500 text-white px-2 py-1 rounded"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDelete(item._id)}
-                    className="bg-red-500 text-white px-2 py-1 rounded"
-                  >
-                    Delete
-                  </button>
-                </td>
+        <div className="overflow-x-auto">
+          <table className="w-full border border-gray-300">
+            <thead>
+              <tr className="bg-orange-500 text-white">
+                <th className="border border-gray-300 px-2 py-2">
+                  National ID
+                </th>
+                <th className="border border-gray-300 px-2 py-2">Name</th>
+                <th className="border border-gray-300 px-2 py-2">Project</th>
+                <th className="border border-gray-300 px-2 py-2">
+                  GS Division
+                </th>
+                <th className="border border-gray-300 px-2 py-2">Address</th>
+                <th className="border border-gray-300 px-2 py-2">
+                  Description
+                </th>
+                <th className="border border-gray-300 px-2 py-2">Latitude</th>
+                <th className="border border-gray-300 px-2 py-2">Longitude</th>
+                <th className="border border-gray-300 px-2 py-2">
+                  Before Image
+                </th>
+                <th className="border border-gray-300 px-2 py-2">
+                  After Image
+                </th>
+                <th className="border border-gray-300 px-2 py-2">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {data.map((item) => (
+                <tr key={item._id} className="text-center">
+                  <td className="border border-gray-300 px-2 py-2">
+                    {item.nationalId}
+                  </td>
+                  <td className="border border-gray-300 px-2 py-2">
+                    {item.name}
+                  </td>
+                  <td className="border border-gray-300 px-2 py-2">
+                    {item.project}
+                  </td>
+                  <td className="border border-gray-300 px-2 py-2">
+                    {item.gsDivision}
+                  </td>
+                  <td className="border border-gray-300 px-2 py-2">
+                    {item.address}
+                  </td>
+                  <td className="border border-gray-300 px-2 py-2">
+                    {item.description}
+                  </td>
+                  <td className="border border-gray-300 px-2 py-2">
+                    {item.lat}
+                  </td>
+                  <td className="border border-gray-300 px-2 py-2">
+                    {item.lng}
+                  </td>
+                  <td className="border border-gray-300 px-2 py-2">
+                    {item.beforePhoto && (
+                      <img
+                        src={item.beforePhoto}
+                        alt="Before"
+                        className="h-12 w-12 object-cover rounded"
+                      />
+                    )}
+                  </td>
+                  <td className="border border-gray-300 px-2 py-2">
+                    {item.afterPhoto && (
+                      <img
+                        src={item.afterPhoto}
+                        alt="After"
+                        className="h-12 w-12 object-cover rounded"
+                      />
+                    )}
+                  </td>
+                  <td className="border border-gray-300 px-2 py-2 flex flex-wrap justify-center gap-2">
+                    <button
+                      onClick={() => onEdit(item)}
+                      className="bg-blue-500 text-white px-2 py-1 rounded text-sm"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(item._id)}
+                      className="bg-red-500 text-white px-2 py-1 rounded text-sm"
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );

@@ -2,24 +2,23 @@ import React, { useEffect, useState, useCallback } from "react";
 
 const ImageTable = ({ onEdit, refreshTable }) => {
   const [images, setImages] = useState([]);
-  const [loading, setLoading] = useState(true); // Loading state
-
+  const [loading, setLoading] = useState(true);
   const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
   // Fetch images from the API
   const fetchImages = useCallback(async () => {
-    setLoading(true); // Set loading to true when fetching starts
+    setLoading(true);
     try {
       if (!API_BASE_URL) throw new Error("API URL is missing!");
-
       const response = await fetch(`${API_BASE_URL}/gallery`);
       if (!response.ok) throw new Error("Failed to fetch images");
+
       const jsonData = await response.json();
       setImages(jsonData);
     } catch (error) {
       console.error("Error fetching images:", error);
     } finally {
-      setLoading(false); // Set loading to false after fetching completes
+      setLoading(false);
     }
   }, [API_BASE_URL]);
 
@@ -42,7 +41,7 @@ const ImageTable = ({ onEdit, refreshTable }) => {
     }
   };
 
-  // Render the image table
+  // Loading spinner
   if (loading) {
     return (
       <div className="flex justify-center items-center p-32">
@@ -56,65 +55,65 @@ const ImageTable = ({ onEdit, refreshTable }) => {
       <h2 className="text-2xl font-bold mb-4">Image Table</h2>
 
       {images.length === 0 ? (
-        <div className="flex items-center justify-center space-x-2 p-32 ">
+        <div className="flex items-center justify-center space-x-2 p-32">
           <span className="text-4xl text-red-500">!</span>
           <span className="text-lg text-gray-600">No data available</span>
         </div>
       ) : (
-        <table className="min-w-full border-collapse border border-gray-300">
-          <thead>
-            <tr className="bg-orange-500 text-white">
-              <th className="border border-gray-300 px-4 py-2">Image Title</th>
-              <th className="border border-gray-300 px-4 py-2">Description</th>
-              <th className="border border-gray-300 px-4 py-2">Image</th>
-              <th className="border border-gray-300 px-4 py-2">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {images.map((image) => (
-              <tr key={image._id} className="text-center">
-                <td className="border border-gray-300 px-4 py-2">
-                  {image.title}
-                </td>
-                <td className="border border-gray-300 px-4 py-2">
-                  {image.description}
-                </td>
-                <td className="border border-gray-300">
-                  {image.image && (
-                    <>
-                      {console.log("After Photo Base64:", image.image)}
+        <div className="overflow-x-auto">
+          <table className="w-full border border-gray-300">
+            <thead>
+              <tr className="bg-orange-500 text-white">
+                <th className="border border-gray-300 px-2 py-2">
+                  Image Title
+                </th>
+                <th className="border border-gray-300 px-2 py-2">
+                  Description
+                </th>
+                <th className="border border-gray-300 px-2 py-2">Image</th>
+                <th className="border border-gray-300 px-2 py-2">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {images.map((image) => (
+                <tr key={image._id} className="text-center">
+                  <td className="border border-gray-300 px-2 py-2">
+                    {image.title}
+                  </td>
+                  <td className="border border-gray-300 px-2 py-2">
+                    {image.description}
+                  </td>
+                  <td className="border border-gray-300 px-2 py-2">
+                    {image.image && (
                       <img
                         src={image.image}
                         alt={image.title}
-                        className="h-16 w-16 object-cover"
-                        onError={(e) => {
-                          console.error("Error loading image", e);
-                          console.log("Image Base64:", image.image);
-                        }}
+                        className="h-12 w-12 object-cover rounded"
+                        onError={(e) => console.error("Error loading image", e)}
                       />
-                    </>
-                  )}
-                </td>
-                <td className="border border-gray-300 px-4 py-2 space-x-2">
-                  <button
-                    type="button"
-                    onClick={() => onEdit(image)}
-                    className="bg-blue-500 text-white px-3 py-1 rounded"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleDelete(image._id)}
-                    className="bg-red-500 text-white px-3 py-1 rounded"
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                    )}
+                  </td>
+                  <td className="border border-gray-300 px-2 py-2 flex flex-wrap justify-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => onEdit(image)}
+                      className="bg-blue-500 text-white px-3 py-1 rounded text-sm"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(image._id)}
+                      className="bg-red-500 text-white px-3 py-1 rounded text-sm"
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );
